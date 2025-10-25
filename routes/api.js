@@ -68,10 +68,6 @@ module.exports = function (app) {
 
       if (!_id) return res.json({ error: 'missing _id' });
 
-      const issues = db[project] || [];
-      const idx = issues.findIndex(i => i._id === _id);
-      if (idx === -1) return res.json({ error: 'could not update', '_id': _id });
-
       // Determine which fields are present to update (exclude _id)
       // Treat strings that are only whitespace as empty (not an update).
       const updateFields = Object.keys(body).filter(k => {
@@ -85,6 +81,10 @@ module.exports = function (app) {
         return true;
       });
       if (updateFields.length === 0) return res.json({ error: 'no update field(s) sent', '_id': _id });
+
+      const issues = db[project] || [];
+      const idx = issues.findIndex(i => i._id === _id);
+      if (idx === -1) return res.json({ error: 'could not update', '_id': _id });
 
       const issue = issues[idx];
       updateFields.forEach(f => {
