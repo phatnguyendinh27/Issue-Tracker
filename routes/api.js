@@ -73,7 +73,17 @@ module.exports = function (app) {
       if (idx === -1) return res.json({ error: 'could not update', '_id': _id });
 
       // Determine which fields are present to update (exclude _id)
-      const updateFields = Object.keys(body).filter(k => k !== '_id' && body[k] !== undefined && body[k] !== '');
+      // Treat strings that are only whitespace as empty (not an update).
+      const updateFields = Object.keys(body).filter(k => {
+        if (k === '_id') return false;
+        const v = body[k];
+        if (v === undefined) return false;
+        if (typeof v === 'string') {
+          return v.trim() !== '';
+        }
+        // for non-strings (booleans, numbers) consider them valid updates
+        return true;
+      });
       if (updateFields.length === 0) return res.json({ error: 'no update field(s) sent', '_id': _id });
 
       const issue = issues[idx];
